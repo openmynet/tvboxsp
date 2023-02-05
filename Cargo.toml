@@ -1,0 +1,25 @@
+[package]
+name = "tvboxsp"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+qscan = { path = "./crates/qscan/qscan", features = ["serialize"] }
+
+anyhow = "1"
+tokio = { version = "1", features = ["full", "time"] }
+reqwest = { version = "0.11", features = ["json"] }
+url = "2.3"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde-aux = "4"
+regex = "1.7"
+json5 = "0.4.1"
+
+clap = {version = "4", features = ["derive"]}
+indicatif = "0.17.3"
+log = "0.4"
+env_logger = "0.10"
