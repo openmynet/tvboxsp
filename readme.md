@@ -21,6 +21,14 @@ tvboxsp -i https://raw.liucn.cc/box/m.json
 
 ## 使用
 ```
-https://raw.iqiq.io/openmynet/tvboxsp/main/data/output.json
+# 源地址
+https://github.com/openmynet/tvboxsp/raw/master/data/output.json
+
+# 镜像1
+https://cdn.staticaly.com/gh/openmynet/tvboxsp/master/data/output.json
+
+# 镜像2
+https://ghproxy.com/https://raw.githubusercontent.com/openmynet/tvboxsp/raw/master/data/output.json
+
 
 ```
