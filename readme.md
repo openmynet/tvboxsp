@@ -32,3 +32,34 @@ https://ghproxy.com/https://raw.githubusercontent.com/openmynet/tvboxsp/raw/mast
 
 
 ```
+
+
+## 跨平台编译
+> windows powershell
+
+```bash
+docker run --rm -it -v "${pwd}:/home/rust/src" -v "${env:userprofile}/.cargo/registry:/usr/local/cargo/registry" -v "${env:userprofile}/.cargo/config:/usr/local/cargo/config" rust:1.66-bullseye
+
+
+# 修改软件源镜像
+sed -i 's#http://deb.debian.org#https://mirrors.ustc.edu.cn#g' /etc/apt/sources.list
+sed -i 's#http://security.debian.org#http://mirrors.ustc.edu.cn#g' /etc/apt/sources.list
+
+# 安装必要的软件
+apt update -y && apt-get install libssl-dev-y 
+
+# aarch64
+# # 添加架构支持
+# dpkg --add-architecture arm64
+# # 安装必要的软件
+# apt update -y && apt upgrade -y && apt-get install gcc-aarch64-linux-gnu -y 
+
+# 进入工作区
+cd /home/rust/src/
+cp ./cargo.config /usr/local/cargo/config
+
+# 打包编译
+cargo build --release
+
+
+```
