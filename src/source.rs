@@ -1,7 +1,8 @@
-use std::sync::Arc;
+use std::{sync::Arc, collections::HashMap};
 
 use crate::utils;
 use anyhow::Result;
+use base64::Engine;
 use indicatif::ProgressBar;
 use serde_aux::prelude::*;
 
@@ -14,7 +15,9 @@ pub struct Source {
     pub flags: Vec<String>,
     pub ijk: Vec<Ijk>,
     pub ads: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub wallpaper: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub spider: Option<String>,
 }
 
@@ -129,6 +132,25 @@ impl Source {
                 urls.append(&mut addrs);
             })
         });
+        info!("Encrypted starting...");
+        let mut proxies = urls.iter().filter(|a| !a.is_domain).collect::<Vec<_>>();
+        proxies.dedup_by(|a, b| a.origin == b.origin);
+        let mut valid_proxies = vec![];
+        let pb = progress_bar(proxies.len() as u64);
+        for p in proxies {
+            let ok = p.check().await.map_err(|e|{
+                println!("Error: {:?}", e);
+            }).unwrap_or_default();
+            if ok {
+                valid_proxies.push(p.origin.clone()); 
+            }
+            pb.inc(1)
+        }
+        pb.finish();
+        self.lives.iter_mut().for_each(|item| {
+            item.check_proxy(&valid_proxies);
+        });
+        info!("Explicitly starting...");
         let mut addrs = urls.into_iter().filter(|a| a.is_domain).collect::<Vec<_>>();
         // 去除重复
         addrs.dedup_by(|a, b| a.origin == b.origin);
@@ -229,6 +251,7 @@ pub struct Vod {
     pub quick_search: i32,
     #[serde(default, deserialize_with = "deserialize_option_number_from_string")]
     pub filterable: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ext: Option<serde_json::Value>,
 }
 
@@ -261,6 +284,16 @@ impl Live {
         }
         self.channels = items;
     }
+    pub fn check_proxy(&mut self, origins: &Vec<String>) {
+        let mut items = vec![];
+        for i in &mut self.channels {
+            i.check_proxy(origins);
+            if !i.urls.is_empty() {
+                items.push(i.clone());
+            };
+        }
+        self.channels = items;
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -275,6 +308,20 @@ impl Channel {
             let uri = UrlLike::parse(i);
             if let Ok(uri) = uri {
                 if !uri.is_domain {
+                    items.push(i.clone());
+                } else if origins.contains(&uri.origin) {
+                    items.push(i.clone());
+                }
+            }
+        }
+        self.urls = items;
+    }
+    pub fn check_proxy(&mut self, origins: &Vec<String>) {
+        let mut items = vec![];
+        for i in &self.urls {
+            let uri = UrlLike::parse(i);
+            if let Ok(uri) = uri {
+                if uri.is_domain {
                     items.push(i.clone());
                 } else if origins.contains(&uri.origin) {
                     items.push(i.clone());
@@ -304,6 +351,7 @@ pub struct Parse {
     )]
     pub i_type: i32,
     pub url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ext: Option<serde_json::Value>,
 }
 
@@ -331,12 +379,6 @@ pub struct Opt {
     pub category: i32,
     pub name: String,
     pub value: String,
-}
-
-#[derive(Deserialize, Debug, PartialEq)]
-struct Config {
-    message: String,
-    n: i32,
 }
 
 pub fn progress_bar(count: u64) -> Arc<ProgressBar> {
@@ -376,15 +418,40 @@ impl UrlLike {
             is_domain: !host.contains("="),
         })
     }
+    pub async fn check(&self) -> Result<bool> {
+        if self.is_domain {
+            return utils::check_url(&self.origin).await;
+        }
+        let uri = url::Url::parse(&self.origin)?;
+        let host = uri.host_str().ok_or(anyhow!("host loss!"))?;
+        let value = serde_qs::from_str::<HashMap<String, String>>(host)?;
+        let ext = value
+            .get("ext")
+            .ok_or(anyhow!("ext loss!"))?;
+        let ext = base64::engine::general_purpose::URL_SAFE.decode(ext)?;
+        let uri = String::from_utf8(ext)?;
+        utils::check_url(&uri).await
+    }
 }
 
 #[test]
 fn test_config() {
-    let i = "proxy://do=live&type=txt&ext=aHR0cDovL3d3dy5tOTUyNy50b3AvbWwudHh0";
+    let i = "proxy://do=live&type=txt&ext=aHR0cDovLzl4aTRvLnRrL3N1Yi9teXR2LnR4dA==";
     // let i = "rtmp://45.88.148.178:12/channel/60c2f331961593122ebaf8c7?sign=epgg4";
     let uri = UrlLike::parse(i);
     assert!(uri.is_ok());
     let uri = uri.unwrap();
     println!("{:?}", uri);
     assert_eq!(1, 1)
+}
+
+#[tokio::test]
+async fn test_rtsp() {
+    let i = "proxy://do=live&type=txt&ext=aHR0cDovLzl4aTRvLnRrL3N1Yi9teXR2LnR4dA==";
+    let uri = UrlLike::parse(i);
+    assert!(uri.is_ok());
+    let uri = uri.unwrap();
+    println!("{:?}", uri);
+    let ok = uri.check().await.unwrap_or_default();
+    assert!(ok)
 }

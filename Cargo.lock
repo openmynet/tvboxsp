@@ -1490,6 +1490,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_qs"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c679fa27b429f2bb57fd4710257e643e86c966e716037259f8baa33de594a1b6"
+dependencies = [
+ "percent-encoding",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "serde_urlencoded"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1810,6 +1821,7 @@ name = "tvboxsp"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64 0.21.0",
  "clap",
  "env_logger",
  "indicatif",
@@ -1821,6 +1833,7 @@ dependencies = [
  "serde",
  "serde-aux",
  "serde_json",
+ "serde_qs",
  "tokio",
  "url",
 ]
