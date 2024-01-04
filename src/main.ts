@@ -1,0 +1,18 @@
+import { createPinia } from "pinia";
+import ArcoVue from "@arco-design/web-vue";
+import ArcoVueIcon from "@arco-design/web-vue/es/icon";
+import { Message, Notification } from "@arco-design/web-vue";
+import { createApp } from "vue";
+import "@arco-design/web-vue/dist/arco.css";
+import "./styles.css";
+import "./assets/addon.scss";
+import "./interfaces/index";
+import App from "./App.vue";
+const pinia = createPinia();
+const app = createApp(App);
+Message._context = app._context;
+Notification._context = app._context;
+app.use(ArcoVue);
+app.use(pinia);
+app.use(ArcoVueIcon);
+app.mount("#app");

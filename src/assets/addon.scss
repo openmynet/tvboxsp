@@ -1,0 +1,36 @@
+.flex {
+  &.flex-row {
+    .flex-x-auto {
+      flex: 1 1 auto;
+      width: 0;
+    }
+  }
+  &.flex-col {
+    .flex-y-auto {
+      flex: 1 1 auto;
+      height: 0;
+    }
+  }
+}
+
+.flex.arco-tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  .arco-tabs-content {
+    flex: 1 1 0%;
+    .arco-tabs-content-list {
+      height: 100%;
+      // flex-direction: column;
+    }
+  }
+  .arco-tabs-content-item {
+    .arco-tabs-pane {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  }
+}

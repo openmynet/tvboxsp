@@ -1,0 +1,55 @@
+[package]
+name = "tvbox-provider"
+version = "0.0.0"
+description = "A Tauri App"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.4", features = [] }
+
+[dependencies]
+tauri = { version = "1.4", features = ["api-all", "windows7-compat"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+axum = "0.7.3"
+
+anyhow = "1"
+tokio = { version = "1", features = ["full", "time"] }
+reqwest = { version = "0.11", features = ["json"] }
+url = "2.3"
+
+serde_qs = "0.12"
+serde-aux = "4"
+regex = "1.10"
+json5 = "0.4.1"
+base64 = "0.21"
+
+indicatif = "0.17.3"
+log = "0.4"
+env_logger = "0.10"
+m3u8-rs = "5.0.5"
+# strum = { version = "0.25.0", features = ["derive"] }
+cached = { version = "0.47.0", features = [
+    "async",
+    "async_tokio_rt_multi_thread",
+] }
+once_cell = "1"
+default-net = "0.21.0"
+num_cpus = "1.16.0"
+async-trait = "0.1.75"
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
+
+[dev-dependencies]
+image = "0.24"
+icns = "0.3.1"
+bytes = "1.5.0"
