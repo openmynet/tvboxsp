@@ -1,6 +1,6 @@
 # 帮助
 
-## 生成方式
+## 生成密钥
 
 ```bash
 yarn tauri signer generate -w ./key/app.key
