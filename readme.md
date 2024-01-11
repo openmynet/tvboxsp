@@ -6,7 +6,12 @@ tvbox 视频源检测与合并工具
 <div style="display:flex;">
 <img src="./images/a.png" style="min-width:0" />
 <img src="./images/b.png" style="min-width:0" />
+<img src="./images/c.png" style="min-width:0" />
+<img src="./images/d.png" style="min-width:0" />
 </div>
+<br>
+
+> 点击【预览】实现导出与测试
 
 ## 构建
 
