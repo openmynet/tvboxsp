@@ -1,8 +1,4 @@
-use axum::{
-    response::IntoResponse,
-    routing::{get, post},
-    Json, Router,
-};
+use axum::{response::IntoResponse, routing::get, Router};
 use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 

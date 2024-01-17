@@ -7,11 +7,27 @@ import { useTxtPlaylistStore } from "../../store";
 import { confirm } from "../../utils";
 import { IconSearch } from "@arco-design/web-vue/es/icon";
 import TxtPreview from "./txt-preview.vue";
+import { listen } from "@tauri-apps/api/event";
+listen("urls_accessibility://progress", async (e) => {
+  const { payload } = e;
+  const { progress, total } = payload as { progress: number; total: number };
+  playlist.tips = `${progress} / ${total}`;
+  playlist.percent = parseFloat((progress / total).toFixed(4)) || 0.0;
+  if (progress == total) {
+    // 需要更好的处理方法
+    setTimeout(() => {
+      playlist.tips = "0/0";
+      playlist.percent = 0;
+    }, 1000);
+  }
+});
 // TODO playlist.m3u8 playlist.txt 两种格式
 const playlist = reactive({
   file: "https://agit.ai/Yoursmile7/TVBox/raw/branch/master/live.txt",
   skip_ipv6: true,
   loading: false,
+  tips: "",
+  percent: 0,
   preAdd: false,
   addSource: "",
   selectedKeys: [] as string[],
@@ -166,7 +182,27 @@ const preview = async () => {
 </script>
 
 <template>
-  <a-spin :size="48" :loading="playlist.loading" class="h-full w-full">
+  <a-spin
+    :size="48"
+    :loading="playlist.loading"
+    :tip="playlist.tips"
+    class="h-full w-full">
+    <template #icon>
+      <div class="p-4 rounded bg-white shadow">
+        <a-progress
+          type="circle"
+          track-color="#06f3"
+          :percent="playlist.percent"
+          v-if="playlist.tips" />
+        <icon-loading v-else />
+      </div>
+    </template>
+    <template #tip>
+      <small class="rounded bg-blue-100 px-2 inline-block" v-if="playlist.tips">
+        当前进度: {{ playlist.tips }}
+      </small>
+    </template>
+
     <div class="playlist text-sm w-full h-full flex flex-col">
       <form class="group peer w-full">
         <div class="item flex flex-row w-full">

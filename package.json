@@ -17,6 +17,7 @@
     "lodash-es": "^4.17.21",
     "pinia": "^2.1.7",
     "qrcode-vue3": "^1.6.8",
+    "tauri-plugin-store-api": "https://github.com/tauri-apps/tauri-plugin-store.git#v1",
     "video.js": "^8.6.1",
     "vue": "^3.3.4"
   },

@@ -22,6 +22,7 @@ fn main() {
         rt.shutdown_background();
     });
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             desktop::parse_playlist,
             desktop::parse_tvbox,
@@ -35,6 +36,7 @@ fn main() {
             desktop::cache,
             desktop::lan_ip,
             desktop::is_install,
+            desktop::download,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

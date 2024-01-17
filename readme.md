@@ -57,11 +57,20 @@ apt update -y && apt-get install libssl-dev libgtk-3-dev libwebkit2gtk-4.0-dev l
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash - &&\
 apt-get install -y nodejs
 
+cd /home/rust/src
 # 安装yarn
+# npm config set registry https://registry.npm.taobao.org/
+# npm config set registry https://registry.npmjs.org/
+
 npm -g i yarn
 # 安装依赖
+# yarn config set registry https://registry.npm.taobao.org/
+# yarn config set registry https://registry.npmjs.org/
 yarn
 # 构建
+# proxy for wget 
+# export http_proxy=http://127.0.0.1:10811/
+# export https_proxy=http://127.0.0.1:10811/
 yarn tauri build
 
 # AppImage软件包的构建依赖于github相关脚本，如需构建AppImage版本请务必保证可以正常访问github

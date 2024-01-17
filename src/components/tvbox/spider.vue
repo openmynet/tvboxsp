@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Message } from "@arco-design/web-vue";
+import { save } from "@tauri-apps/api/dialog";
+import { invoke } from "@tauri-apps/api/tauri";
 const props = defineProps({
   url: String,
 });
@@ -11,8 +13,24 @@ const info = computed(() => {
     hash: items.slice(1).join(":"),
   };
 });
-const download = () => {
-  Message.success("下载完成");
+const download = async () => {
+  if (!info.value.url) {
+    return;
+  }
+  const filePath = await save({
+    filters: [
+      {
+        name: "custom_spider",
+        extensions: ["jar"],
+      },
+    ],
+  });
+  const ok = await invoke("downlaod", { url: info.value.url, path: filePath });
+  if (ok) {
+    Message.success("下载成功!");
+  } else {
+    Message.error("下载失败!");
+  }
 };
 </script>
 <template>

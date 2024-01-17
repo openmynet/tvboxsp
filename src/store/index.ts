@@ -1,3 +1,4 @@
 import { useTxtPlaylistStore } from "./txt";
 import { useTvBoxStore } from "./tvbox";
-export { useTxtPlaylistStore, useTvBoxStore };
+import localstorage from "./localstorage";
+export { useTxtPlaylistStore, useTvBoxStore, localstorage };

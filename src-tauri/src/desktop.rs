@@ -8,7 +8,7 @@ use crate::{
     },
     utils,
 };
-use tauri::Result;
+use tauri::{Result, Runtime, Window};
 
 #[tauri::command]
 pub async fn parse_playlist(
@@ -56,12 +56,13 @@ pub async fn get_content(uri: String) -> String {
 }
 
 #[tauri::command]
-pub async fn urls_accessibility(
+pub async fn urls_accessibility<R: Runtime>(
+    window: Window<R>,
     urls: Vec<String>,
     quick_mode: Option<bool>,
     skip_ipv6: Option<bool>,
 ) -> Vec<String> {
-    tvbox::urls_accessibility(urls, quick_mode.unwrap_or_default(), skip_ipv6).await
+    tvbox::urls_accessibility(window, urls, quick_mode.unwrap_or_default(), skip_ipv6).await
 }
 
 /// 执行
@@ -71,7 +72,8 @@ pub async fn exec(args: String) -> String {
 }
 
 #[tauri::command]
-pub async fn vods_connectivity(
+pub async fn vods_connectivity<R: Runtime>(
+    window: Window<R>,
     items: Vec<Vod>,
     quick_mode: Option<bool>,
     skip_ipv6: Option<bool>,
@@ -79,11 +81,13 @@ pub async fn vods_connectivity(
 where
 {
     let items =
-        tvbox::check::check_connections(items, quick_mode.unwrap_or_default(), skip_ipv6).await;
+        tvbox::check::check_connections(window, items, quick_mode.unwrap_or_default(), skip_ipv6)
+            .await;
     items
 }
 #[tauri::command]
-pub async fn live_connectivity(
+pub async fn live_connectivity<R: Runtime>(
+    window: Window<R>,
     items: Vec<Live>,
     quick_mode: Option<bool>,
     skip_ipv6: Option<bool>,
@@ -91,12 +95,14 @@ pub async fn live_connectivity(
 where
 {
     let items =
-        tvbox::check::check_connections(items, quick_mode.unwrap_or_default(), skip_ipv6).await;
+        tvbox::check::check_connections(window, items, quick_mode.unwrap_or_default(), skip_ipv6)
+            .await;
     items
 }
 
 #[tauri::command]
-pub async fn parses_connectivity(
+pub async fn parses_connectivity<R: Runtime>(
+    window: Window<R>,
     items: Vec<Parse>,
     quick_mode: Option<bool>,
     skip_ipv6: Option<bool>,
@@ -104,7 +110,8 @@ pub async fn parses_connectivity(
 where
 {
     let items =
-        tvbox::check::check_connections(items, quick_mode.unwrap_or_default(), skip_ipv6).await;
+        tvbox::check::check_connections(window, items, quick_mode.unwrap_or_default(), skip_ipv6)
+            .await;
     items
 }
 
@@ -160,6 +167,16 @@ pub async fn inline_exec(args: String) -> String {
         println!("shell.err2: {:?}", child);
         String::default()
     }
+}
+
+#[tauri::command]
+pub async fn download(url: String, path: String) -> bool {
+    if let Ok(resp) = reqwest::get(url).await {
+        if let Ok(buff) = resp.bytes().await {
+            return std::fs::write(path, buff).is_ok();
+        }
+    }
+    false
 }
 
 #[tokio::test]

@@ -220,6 +220,11 @@
   resolved "https://registry.npmmirror.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
+"@tauri-apps/api@1.5.3":
+  version "1.5.3"
+  resolved "https://registry.npmmirror.com/@tauri-apps/api/-/api-1.5.3.tgz#f7b362b1f30aadb0a8bbeb7ae111755c0ed33d73"
+  integrity sha512-zxnDjHHKjOsrIzZm6nO5Xapb/BxqUq1tc7cGkFXsFkGTsSWgCPH1D8mm0XS9weJY2OaR73I3k3S+b7eSzJDfqA==
+
 "@tauri-apps/api@^1.4.0":
   version "1.4.0"
   resolved "https://registry.npmmirror.com/@tauri-apps/api/-/api-1.4.0.tgz#b4013ca3d17b853f7df29fe14079ebb4d52dbffa"
@@ -1537,6 +1542,12 @@ tailwindcss@^3.4.0:
     postcss-selector-parser "^6.0.11"
     resolve "^1.22.2"
     sucrase "^3.32.0"
+
+"tauri-plugin-store-api@https://githubfast.com/tauri-apps/tauri-plugin-store.git#v1":
+  version "0.0.0"
+  resolved "https://githubfast.com/tauri-apps/tauri-plugin-store.git#7d2632996f290b0f18cc5f8a2b2791046400690e"
+  dependencies:
+    "@tauri-apps/api" "1.5.3"
 
 thenify-all@^1.0.0:
   version "1.6.0"

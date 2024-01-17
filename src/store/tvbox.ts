@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
+import localstorage from "./localstorage";
 async function loadResource(uri: string) {
   uri = uri.trim();
   if (!uri) {
@@ -56,16 +57,39 @@ function features(item: TvBoxVod) {
 }
 
 const useTvBoxStore = defineStore("tvbox", () => {
+  const SOURCE = "TVBOX_SOURCE";
+  const MERGIN_SOURCE = "TVBOX_MERGIN_SOURCE";
+
   const source = ref(undefined as undefined | TvBoxSource);
   const source_text = computed(() => {
     return JSON.stringify(source, undefined, "");
   });
+  const merginSource = ref("");
   const loading = ref(false);
+  const init = async () => {
+    const ms = await localstorage.get<string>(MERGIN_SOURCE).catch((_) => "");
+    if (ms) {
+      merginSource.value = ms;
+    }
+    const src = await localstorage.get<string>(SOURCE).catch((_) => "");
+    if (src) {
+      try {
+        source.value = JSON.parse(src);
+      } catch (_) {}
+    }
+  };
+  const done = async () => {
+    await localstorage
+      .set(SOURCE, JSON.stringify(source.value))
+      .catch((_) => null);
+    await localstorage.save().catch((_) => null);
+    loading.value = false;
+  };
   const load = async (uri: string) => {
     loading.value = true;
     const value = await loadResource(uri);
     source.value = value;
-    loading.value = false;
+    await done();
   };
   const push = async (uri: string) => {
     loading.value = true;
@@ -155,7 +179,7 @@ const useTvBoxStore = defineStore("tvbox", () => {
         }
       }
     }
-    loading.value = false;
+    await done();
   };
   const check = async () => {
     if (!source.value) {
@@ -169,7 +193,7 @@ const useTvBoxStore = defineStore("tvbox", () => {
       return item;
     });
     source.value.sites = onlines;
-    loading.value = false;
+    await done();
   };
   const check_live = async (value?: TvBoxLive[]) => {
     if (!source.value) {
@@ -183,7 +207,7 @@ const useTvBoxStore = defineStore("tvbox", () => {
       return item;
     });
     source.value.lives = onlines;
-    loading.value = false;
+    await done();
   };
   const check_parses = async (value?: TvBoxParse[]) => {
     if (!source.value) {
@@ -197,7 +221,7 @@ const useTvBoxStore = defineStore("tvbox", () => {
       return item;
     });
     source.value.parses = onlines;
-    loading.value = false;
+    await done();
   };
   const check_by = async (list: TvBoxVod[]) => {
     if (!source.value) {
@@ -215,9 +239,9 @@ const useTvBoxStore = defineStore("tvbox", () => {
         i.status = onlines[i.key];
       }
     });
-    loading.value = false;
+    await done();
   };
-  const remove_by = (items: TvBoxVod[]) => {
+  const remove_by = async (items: TvBoxVod[]) => {
     if (!source.value) {
       return;
     }
@@ -226,14 +250,16 @@ const useTvBoxStore = defineStore("tvbox", () => {
       const key = item.name + "-" + item.key;
       return !keys.includes(key);
     });
+    await done();
   };
-  const remove_live = (i: number) => {
+  const remove_live = async (i: number) => {
     if (!source.value) {
       return;
     }
     source.value.lives.splice(i, 1);
+    await done();
   };
-  const remove_parses = (i: number | TvBoxParse[]) => {
+  const remove_parses = async (i: number | TvBoxParse[]) => {
     if (!source.value) {
       return;
     }
@@ -246,14 +272,16 @@ const useTvBoxStore = defineStore("tvbox", () => {
         return !keys.includes(key);
       });
     }
+    await done();
   };
-  const remove_ads = (i: number) => {
+  const remove_ads = async (i: number) => {
     if (!source.value || !source.value.ads) {
       return;
     }
     source.value.ads.splice(i, 1);
+    await done();
   };
-  const add_live = (item: TvBoxLive) => {
+  const add_live = async (item: TvBoxLive) => {
     if (!source.value || !source.value.ads) {
       return;
     }
@@ -261,21 +289,44 @@ const useTvBoxStore = defineStore("tvbox", () => {
     if (!extist) {
       source.value.lives.push(item);
     }
+    await done();
   };
-  const update_wallpaper = (wallpaper: string) => {
+  const update_wallpaper = async (wallpaper: string) => {
     if (!source.value) {
       return;
     }
     source.value.wallpaper = wallpaper;
+    await done();
   };
-  const update_warningText = (warningText: string) => {
+  const update_warningText = async (warningText: string) => {
     if (!source.value) {
       return;
     }
     source.value.warningText = warningText;
+    await done();
   };
   const update_loading = (b?: boolean) => {
     loading.value = !!b;
+  };
+  const update_merginSource = async (t: string) => {
+    merginSource.value = t;
+    await localstorage.set(MERGIN_SOURCE, t);
+  };
+  const mergin = async () => {
+    const src = merginSource.value.trim();
+    if (!src) {
+      return;
+    }
+    const lines = src
+      .split(/[,;，；\n]/)
+      .map((line) => line.trim())
+      .filter((line) => {
+        return line && /https:\/\//.test(line);
+      });
+    for (let i = 0; i < lines.length; i++) {
+      const item = lines[i];
+      await push(item).catch((_) => null);
+    }
   };
   const cache = async () => {
     if (!source.value) {
@@ -296,6 +347,8 @@ const useTvBoxStore = defineStore("tvbox", () => {
     source,
     source_text,
     loading,
+    merginSource,
+    init,
     load,
     push,
     check,
@@ -310,6 +363,8 @@ const useTvBoxStore = defineStore("tvbox", () => {
     update_wallpaper,
     update_warningText,
     update_loading,
+    update_merginSource,
+    mergin,
     cache,
   };
 });
