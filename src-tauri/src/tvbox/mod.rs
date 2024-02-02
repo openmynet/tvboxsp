@@ -26,11 +26,13 @@ pub async fn urls_accessibility<R: Runtime>(
     urls: Vec<String>,
     quick_mode: bool,
     skip_ipv6: Option<bool>,
+    check_m3u8: Option<bool>,
 ) -> Vec<String> {
     if urls.is_empty() {
         return vec![];
     }
     let skip_ipv6 = skip_ipv6.unwrap_or_default();
+    let check_m3u8 = check_m3u8.unwrap_or_default();
     // 生成一个合理线程数
     let threads = {
         let tasks = urls.len();
@@ -81,7 +83,11 @@ pub async fn urls_accessibility<R: Runtime>(
                     let ok = if quick_mode {
                         utils::url_connectivity(&i).await.unwrap_or_default()
                     } else {
-                        utils::url_accessibility(&i).await.unwrap_or_default()
+                        if check_m3u8  {
+                            utils::url_m3u8_accessibility(&i).await.unwrap_or_default()
+                        }else{
+                            utils::url_accessibility(&i).await.unwrap_or_default()
+                        }                        
                     };
                     if ok {
                         items.push(i);

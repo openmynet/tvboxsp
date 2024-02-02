@@ -39,6 +39,31 @@ pub async fn url_accessibility(uri: &str) -> Result<bool> {
     Ok(resp.status().is_success())
 }
 
+/// 检测url的可访问性
+/// 超时时间被设置为1.5秒
+pub async fn url_m3u8_accessibility(uri: &str) -> Result<bool> {
+    let ok = url_connectivity(uri).await?;
+    if !ok {
+        return Ok(false);
+    }
+    let client = reqwest::ClientBuilder::new()
+        .user_agent(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/112.0",
+        )
+        .connect_timeout(Duration::from_secs_f32(6.0))
+        .timeout(Duration::from_secs_f32(10.0))
+        .build()?;
+    let resp = client.get(uri).send().await?;
+    if resp.status().is_success() {
+        let content = resp.text().await?;
+        let checked = m3u8_rs::parse_playlist(content.as_bytes()).is_ok();
+        Ok(checked)
+    }else{
+        Ok(false)
+    }
+    
+}
+
 /// ipv6下待测试
 pub async fn ipv6_connectable() -> bool {
     // Ali DNS

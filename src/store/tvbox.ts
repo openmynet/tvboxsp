@@ -62,7 +62,7 @@ const useTvBoxStore = defineStore("tvbox", () => {
 
   const source = ref(undefined as undefined | TvBoxSource);
   const source_text = computed(() => {
-    return JSON.stringify(source, undefined, "");
+    return JSON.stringify(source.value, undefined, " ");
   });
   const merginSource = ref("");
   const loading = ref(false);

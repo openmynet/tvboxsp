@@ -61,8 +61,9 @@ pub async fn urls_accessibility<R: Runtime>(
     urls: Vec<String>,
     quick_mode: Option<bool>,
     skip_ipv6: Option<bool>,
+    check_m3u8: Option<bool>,
 ) -> Vec<String> {
-    tvbox::urls_accessibility(window, urls, quick_mode.unwrap_or_default(), skip_ipv6).await
+    tvbox::urls_accessibility(window, urls, quick_mode.unwrap_or_default(), skip_ipv6,check_m3u8).await
 }
 
 /// 执行

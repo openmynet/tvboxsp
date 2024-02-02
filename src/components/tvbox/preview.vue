@@ -24,7 +24,7 @@ const saveWith = async () => {
       },
     ],
   });
-  const content = store.source_text;
+  const content = store.source_text;  
   const ok = await invoke("save", { path: filePath, content });
   if (ok) {
     Message.success("保存成功!");

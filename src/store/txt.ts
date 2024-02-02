@@ -24,6 +24,7 @@ async function checkResource(items: TxtPlaylist[]) {
   console.time("check");
   const value = await invoke<string[]>("urls_accessibility", {
     urls: items.map((item) => item.url),
+    check_m3u8: true,
   }).catch((e) => {
     console.log(e);
     return [];
