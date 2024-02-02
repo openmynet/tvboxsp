@@ -39,11 +39,11 @@ impl Connection for Live {
                 let connectable = if quick_mode {
                     utils::url_connectivity(url).await.unwrap_or_default()
                 } else {
-                    utils::url_accessibility(url).await.unwrap_or_default()
+                    utils::url_txt_playlist_accessibility(url).await.unwrap_or_default()
                 };
-                if !connectable {
-                    self.url = None;
-                }
+                // if !connectable {
+                //     self.url = None;
+                // }
                 ok = connectable;
             }
         }
