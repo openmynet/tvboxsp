@@ -59,7 +59,7 @@ pub async fn url_txt_playlist_accessibility(uri: &str) -> Result<bool> {
             .headers()
             .get(CONTENT_TYPE)
             .and_then(|contnet_type| contnet_type.to_str().ok())
-            .and_then(|contnet_type| Some(contnet_type.contains("text")))
+            .and_then(|contnet_type| Some(contnet_type.contains("text/plain")))
             .unwrap_or_default();
         if text_plain {
             let content = resp.text().await?;
@@ -87,12 +87,20 @@ pub async fn url_m3u8_accessibility(uri: &str) -> Result<bool> {
         .build()?;
     let resp = client.get(uri).send().await?;
     if resp.status().is_success() {
-        let content = resp.text().await?;
-        let checked = m3u8_rs::parse_playlist(content.as_bytes()).is_ok();
-        Ok(checked)
-    } else {
-        Ok(false)
-    }
+        let is_m3u8 = resp
+            .headers()
+            .get(CONTENT_TYPE)
+            .and_then(|contnet_type| contnet_type.to_str().ok())
+            .and_then(|contnet_type| Some(contnet_type.contains("mpegURL")))
+            .unwrap_or_default();
+        if is_m3u8 {
+            let content = resp.text().await?;
+            let checked = m3u8_rs::parse_playlist(content.as_bytes()).is_ok();
+            return  Ok(checked)
+        }
+       
+    } 
+    Ok(false)
 }
 
 /// ipv6下待测试

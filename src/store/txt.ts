@@ -34,7 +34,7 @@ async function checkResource(items: TxtPlaylist[]) {
 }
 async function try_play(url: string) {
   const exist = await invoke("is_install", { application: "mpv" });
-  if (!exist) {
+  if (exist) {
     await invoke("exec", { args: `start mpv ${url}` });
     return;
   }
