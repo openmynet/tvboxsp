@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // import { Message } from "@arco-design/web-vue";
 import { useTxtPlaylistStore } from "../../store";
-import { ref, computed, reactive, onMounted } from "vue";
+import { reactive } from "vue";
 import { confirm } from "../../utils";
 import { Message } from "@arco-design/web-vue";
 import CopyText from "../ui/copy-text.vue";
