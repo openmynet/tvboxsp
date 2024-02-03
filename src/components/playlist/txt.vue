@@ -7,6 +7,7 @@ import { useTxtPlaylistStore } from "../../store";
 import { confirm } from "../../utils";
 import { IconSearch } from "@arco-design/web-vue/es/icon";
 import TxtPreview from "./txt-preview.vue";
+import TxtGroup from "./txt-group.vue";
 import { listen } from "@tauri-apps/api/event";
 listen("urls_accessibility://progress", async (e) => {
   const { payload } = e;
@@ -235,7 +236,7 @@ const preview = async () => {
       </form>
       <hr class="mt-6" />
       <div class="content flex-1">
-        <a-tabs default-active-key="1" size="mini" class="flex">
+        <a-tabs default-active-key="3" size="mini" class="flex">
           <template #extra>
             <a-button
               type="primary"
@@ -466,6 +467,11 @@ const preview = async () => {
               placeholder=""
               :auto-size="false"
               class="text flex-y-auto flex" />
+          </a-tab-pane>
+          <a-tab-pane key="3" title="分组管理">
+            <div class="flex-y-auto">
+              <TxtGroup></TxtGroup>
+            </div>            
           </a-tab-pane>
         </a-tabs>
       </div>

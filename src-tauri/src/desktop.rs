@@ -180,6 +180,13 @@ pub async fn download(url: String, path: String) -> bool {
     false
 }
 
+#[tauri::command]
+pub async fn hash(content: String) -> String {
+    let value = xxhash_rust::xxh3::xxh3_64_with_seed(content.as_bytes(), 42);
+    format!("{:0>16X}", value)
+}
+
+
 #[tokio::test]
 async fn test_exec() {
     let args = r#"start  /d D:\"Program Files"\mpv mpv http://39.134.24.162/dbiptv.sn.chinamobile.com/PLTV/88888888/224/3221226395/1.m3u8"#;

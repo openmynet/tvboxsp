@@ -3,8 +3,8 @@ import { reactive } from "vue";
 import playlist from "./components/playlist.vue";
 import tvbox from "./components/tvbox.vue";
 const menu = reactive([
-  { name: "直播源", checked: false },
-  { name: "TvBox", checked: true },
+  { name: "直播源", checked: true },
+  { name: "TvBox", checked: false },
 ]);
 const onMenuClick = (item: any) => {
   menu.forEach((i) => (i.checked = false));

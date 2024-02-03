@@ -87,6 +87,15 @@ interface TxtPlaylist {
   // 0: uncheck, -1, loss, 1: online
   online?: number;
   http?: boolean;
+  group?: boolean;
+  raw: string;
+  hash: string;
+}
+
+interface ITxtPlaylistGroup {
+  group: string;
+  raw: TxtPlaylist,
+  items: TxtPlaylist[];
 }
 
 interface ConnectionStatus {

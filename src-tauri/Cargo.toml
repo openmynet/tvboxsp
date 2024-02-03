@@ -44,6 +44,7 @@ default-net = "0.21.0"
 num_cpus = "1.16.0"
 async-trait = "0.1.75"
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace.git", branch = "v1" }
+xxhash-rust = { version = "0.8.6", features = ["xxh3"] }
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

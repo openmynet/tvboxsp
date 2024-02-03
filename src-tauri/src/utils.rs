@@ -2,6 +2,7 @@ use anyhow::Result;
 use cached::proc_macro::cached;
 use reqwest::header::CONTENT_TYPE;
 use std::{net::ToSocketAddrs, time::Duration};
+use url::Url;
 
 /// 检测url的服务器网络可连接性，并不检测实际url的内容
 #[cached(key = "String", result = true, convert = r#"{ format!("{}", uri) }"#)]
@@ -86,20 +87,31 @@ pub async fn url_m3u8_accessibility(uri: &str) -> Result<bool> {
         .timeout(Duration::from_secs_f32(10.0))
         .build()?;
     let resp = client.get(uri).send().await?;
+    let uri = Url::parse(uri)?;
     if resp.status().is_success() {
-        let is_m3u8 = resp
-            .headers()
-            .get(CONTENT_TYPE)
-            .and_then(|contnet_type| contnet_type.to_str().ok())
-            .and_then(|contnet_type| Some(contnet_type.contains("mpegURL")))
-            .unwrap_or_default();
-        if is_m3u8 {
-            let content = resp.text().await?;
-            let checked = m3u8_rs::parse_playlist(content.as_bytes()).is_ok();
-            return  Ok(checked)
+        // 假定所有请求的url都必须是m3u8
+        let path = uri.path();
+        let not_m3u8 = path.ends_with(".mp4")
+            || path.ends_with(".flv")
+            || path.ends_with(".mkv")
+            || path.ends_with(".webm")
+            || path.ends_with(".av1");
+        if not_m3u8 {
+          return Ok(true)
+        } else {
+            let is_m3u8 = resp
+                .headers()
+                .get(CONTENT_TYPE)
+                .and_then(|contnet_type| contnet_type.to_str().ok())
+                .and_then(|contnet_type| Some(contnet_type.contains("mpegURL")))
+                .unwrap_or_default();
+            if is_m3u8 {
+                let content = resp.text().await?;
+                let checked = m3u8_rs::parse_playlist(content.as_bytes()).is_ok();
+                return Ok(checked);
+            }
         }
-       
-    } 
+    }
     Ok(false)
 }
 

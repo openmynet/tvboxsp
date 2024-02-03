@@ -37,6 +37,7 @@ fn main() {
             desktop::lan_ip,
             desktop::is_install,
             desktop::download,
+            desktop::hash,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

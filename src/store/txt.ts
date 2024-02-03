@@ -78,8 +78,8 @@ async function try_play(url: string) {
   });
   console.log("exec.info", info);
 }
-function to_playlist(content: string) {
-  return content
+async function to_playlist(content: string) {
+  const items = content
     .split("\n")
     .map((line) => {
       const item = line.split(",", 2);
@@ -88,9 +88,19 @@ function to_playlist(content: string) {
         url: item[1] || "",
         online: 0,
         http: maybe_http(item[1]),
-      };
+        group: !item[1] || item[1].startsWith("#"),
+        raw: line,
+        hash: ""
+      } as TxtPlaylist;
     })
-    .filter((item) => item.name);
+    .filter((item) => item.url);
+  for (let i = 0; i < items.length; i++) {
+    items[i].hash = await invoke<string>("hash", {
+      content: items[i].raw,
+    })
+  }
+
+  return items;
 }
 
 function maybe_http(str: string) {
@@ -101,18 +111,14 @@ function maybe_http(str: string) {
 }
 
 function dedup_by_url(items: TxtPlaylist[]) {
-  const urls = items.filter((item) => item.http).map((item) => item.url);
-  let keys = Array.from(new Set(urls));
-  const list = items.filter((item) => {
-    if (!item.http) {
-      return true;
+  const hashs = [] as string[];
+  let list = [] as TxtPlaylist[];
+  items.forEach((item) => {
+    if (!hashs.includes(item.hash)) {
+      hashs.push(item.hash);
+      list.push(item)
     }
-    if (keys.includes(item.url)) {
-      keys = keys.filter((k) => k != item.url);
-      return true;
-    }
-    return false;
-  });
+  })
   return list;
 }
 
@@ -121,17 +127,53 @@ const useTxtPlaylistStore = defineStore("txt_playlist", () => {
   const content_text = computed(() => {
     return to_string();
   });
+  const group = computed({
+    get() {
+      let i = 0;
+      let items = [] as ITxtPlaylistGroup[];
+      content.value.forEach((item: TxtPlaylist) => {
+        if (item.group) {
+          i = items.length;
+          if (!items[i]) {
+            items[i] = { group: item.name, raw: item, items: [] } as ITxtPlaylistGroup;
+          }
+        } else {
+          items[i].items.push(item);
+        }
+      });
+      return items;
+    },
+    set(v: ITxtPlaylistGroup[]) {
+      const items = v.map(i => {
+        return [i.raw, ...i.items]
+      }).flat();
+      content.value = items;
+    }
+  })
   const load = async (uri: string) => {
     const text = await loadResource(uri);
-    const list = to_playlist(text);
+    const list = await to_playlist(text);
     const items = dedup_by_url(list);
     content.value = items;
   };
   const push = async (uri: string) => {
     const text = await loadResource(uri);
-    const items = to_playlist(text);
+    const items = await to_playlist(text);
     const new_items = content.value.concat(items);
-    content.value = dedup_by_url(new_items);
+    const deduped = dedup_by_url(new_items);
+    // 除去空白分组
+    let index = 0;
+    let list = deduped.filter((item, i) => {
+      if (!item.url) {
+        const current = index + 1;
+        index = i;
+        if (current == i) {
+          return false;
+        }
+      }
+      return true
+    })
+    content.value = list;
   };
   const to_string = () => {
     return content.value
@@ -171,17 +213,43 @@ const useTxtPlaylistStore = defineStore("txt_playlist", () => {
       try_play(item.url);
     }
   };
-  const update = (text: string) => {
-    const list = to_playlist(text);
+  const update = async (text: string) => {
+    const list = await to_playlist(text);
     const items = dedup_by_url(list);
     content.value = items;
   };
   const cache = async () => {
     await invoke("cache", { key: "playlist", value: content_text.value });
   };
+  const group_move = async (hashs: string[], from: string, to: string) => {
+    console.log('hash', hashs);
+    
+    let retain = [] as TxtPlaylist[];
+    const items = group.value.map(item => {
+      if (item.raw.hash == from) {
+        retain = item.items.filter(i => hashs.includes(i.hash));
+        console.log(retain.length);
+        
+        item.items = item.items.filter(i => !hashs.includes(i.hash))
+        return item
+      } else {
+        return item
+      }
+    })
+    console.log('retain', retain.length);
+    
+    items.forEach(item => {
+      if (item.raw.hash == to) {
+        console.log('retain', retain.length, to);
+        item.items.push(...retain);
+      }
+    })
+    group.value = items;
+  }
   return {
     content,
     content_text,
+    group,
     load,
     push,
     to_string,
@@ -191,6 +259,7 @@ const useTxtPlaylistStore = defineStore("txt_playlist", () => {
     play,
     update,
     cache,
+    group_move,
   };
 });
 

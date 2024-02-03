@@ -4199,7 +4199,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-store"
 version = "0.0.0"
-source = "git+https://githubfast.com/tauri-apps/plugins-workspace.git?branch=v1#83f9899f7853dec8a8bd19e32d86550d14646d50"
+source = "git+https://github.com/tauri-apps/plugins-workspace.git?branch=v1#056a458d3025963874b113ff6cfe897373baf944"
 dependencies = [
  "log",
  "serde",
@@ -4656,6 +4656,7 @@ dependencies = [
  "tauri-plugin-store",
  "tokio",
  "url",
+ "xxhash-rust",
 ]
 
 [[package]]
@@ -5472,6 +5473,12 @@ dependencies = [
  "nix",
  "winapi",
 ]
+
+[[package]]
+name = "xxhash-rust"
+version = "0.8.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53be06678ed9e83edb1745eb72efc0bbcd7b5c3c35711a860906aed827a13d61"
 
 [[package]]
 name = "zbus"
