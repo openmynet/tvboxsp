@@ -23,6 +23,34 @@ const onSelect = (item: ITxtPlaylistGroup) => {
 const onMove = () => {
   state.move = true;
 };
+const onSort = () => {
+  state.items.sort((a, b) => {
+    const chna = parseInt(a.name.replace(/[^\d]+/g, ""));
+    const chnb = parseInt(b.name.replace(/[^\d]+/g, ""));
+    const s = chna - chnb;
+    if (isNaN(s) || s == 0) {
+      return a.name.localeCompare(b.name);
+    } else {
+      return s;
+    }
+  });
+  const group = store.group;
+  group.forEach((g) => {
+    if (g.raw.hash == state.group_hash) {
+      g.items.sort((a, b) => {
+        const chna = parseInt(a.name.replace(/[^\d]+/g, ""));
+        const chnb = parseInt(b.name.replace(/[^\d]+/g, ""));
+        const s = chna - chnb;
+        if (isNaN(s) || s == 0) {
+          return a.name.localeCompare(b.name);
+        } else {
+          return s;
+        }
+      });
+    }
+  });
+  store.group = group;
+};
 const onCallMove = (item: ITxtPlaylistGroup) => {
   store.group_move(state.selectedKeys, state.group_hash, item.raw.hash);
   state.move = false;
@@ -67,7 +95,12 @@ const removeGroup = async (i: number, item: ITxtPlaylistGroup) => {
             <span class="flex-1"
               >{{ item.group }}({{ item.items.length }})</span
             >
-            <span class="px-2" title="删除" @click="removeGroup(key, item)" v-show="!item.items.length">
+            <span
+              class="px-2"
+              title="删除"
+              @click="removeGroup(key, item)"
+              v-show="!item.items.length"
+            >
               <icon-close-circle-fill class="text-red-500" />
             </span>
           </div>
@@ -163,6 +196,9 @@ const removeGroup = async (i: number, item: ITxtPlaylistGroup) => {
             </a-button>
             <a-button type="outline" size="mini" class="mr-2" @click="onMove">
               <small>转移选中</small>
+            </a-button>
+            <a-button type="outline" size="mini" class="mr-2" @click="onSort">
+              <small>频道排序</small>
             </a-button>
           </div>
         </template>
